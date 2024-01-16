@@ -10,5 +10,13 @@ spring:
 server:
   port: 9000
 
+app:
+  jwtSecret: mySecretKeyGeneratedSecurelySoPleaseDoNotTryToHackTheShitOutOfItAlsoletMeBeClearIamDoingThisOnlyToMakeThisStringVeryLongSoThatMyCodeDoesNotFailCAPEECE
+  jwtExpirationInMs: 900000
 
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
 

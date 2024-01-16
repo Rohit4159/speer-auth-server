@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -29,8 +30,8 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("User not found with username: " + username);
         }
         User user = userOptional.get();
-        List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("read"));
-        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), authorities);
+        return new User(user.getName(), user.getUsername(), user.getPassword(),
+                user.getEmail(), user.getAuth());
     }
 }
 

@@ -12,7 +12,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
@@ -34,6 +33,8 @@ public class AuthorizationServerConfig {
     @Autowired
     private final KeyManager keyManager;
 
+
+
     public AuthorizationServerConfig(KeyManager keyManager) {
         this.keyManager = keyManager;
     }
@@ -45,7 +46,6 @@ public class AuthorizationServerConfig {
 
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 .oidc(Customizer.withDefaults());
-        http.sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
         http.exceptionHandling(
                 e -> e.authenticationEntryPoint(
                         new LoginUrlAuthenticationEntryPoint("/login")
