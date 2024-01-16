@@ -1,7 +1,14 @@
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: speer-assessment-DB
+      uri: mongodb://localhost:27017/speer-assessment-DB
+      username:
+      password:
 server:
   port: 9000
 
-logging:
-  level:
-    root: trace
-    org.springframework: trace
+
+
