@@ -4,6 +4,7 @@ import com.speer.authserver.model.LoginRequest;
 import com.speer.authserver.model.SignUpRequest;
 import com.speer.authserver.model.User;
 import com.speer.authserver.repository.UserRepository;
+import com.speer.authserver.util.AuthResponse;
 import com.speer.authserver.util.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.Optional;
 
 @RestController
@@ -39,20 +41,31 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> authenticateUser(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<AuthResponse> authenticateUser(@RequestBody LoginRequest loginRequest) {
+        AuthResponse response = new AuthResponse();
+        String jwtToken = null;
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsername(),
+                            loginRequest.getPassword()
+                    )
+            );
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsername(),
-                        loginRequest.getPassword()
-                )
-        );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        String jwt = tokenProvider.generateToken(authentication);
-        log.info("JWT Token: {}",jwt);
-        return new ResponseEntity<String>("Login success",HttpStatus.ACCEPTED);
+            jwtToken = tokenProvider.generateToken(authentication);
+            log.info("JWT Token: {}",jwtToken);
+        } catch (Exception e) {
+            log.info("Exception occurred: ", e);
+            response.setErrors(Collections.singletonList("User does not exist!!"));
+            response.setResult("failure");
+            response.setToken(jwtToken);
+            return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+        }
+        response.setResult("success");
+        response.setToken(jwtToken);
+        return new ResponseEntity<>(response,HttpStatus.ACCEPTED);
     }
 
     @PostMapping("/signup")
