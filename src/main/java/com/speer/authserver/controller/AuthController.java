@@ -55,39 +55,43 @@ public class AuthController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             jwtToken = tokenProvider.generateToken(authentication);
-            log.info("JWT Token: {}",jwtToken);
         } catch (Exception e) {
             log.info("Exception occurred: ", e);
             response.setErrors(Collections.singletonList("User does not exist!!"));
             response.setResult("failure");
             response.setToken(jwtToken);
-            return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
         response.setResult("success");
         response.setToken(jwtToken);
-        return new ResponseEntity<>(response,HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
     }
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody SignUpRequest signUpRequest) {
-        Optional<User> userOptional = userRepository.findByUsername(signUpRequest.getUsername());
+        try {
+            Optional<User> userOptional = userRepository.findByUsername(signUpRequest.getUsername());
 
-        if (userOptional.isPresent()) {
-            return new ResponseEntity<>( "Username is already taken!", HttpStatus.BAD_REQUEST);
+            if (userOptional.isPresent()) {
+                return new ResponseEntity<>( "Username is already taken!", HttpStatus.BAD_REQUEST);
+            }
+
+            // Create user account
+            String hashPassword = passwordEncoder.encode(signUpRequest.getPassword());
+            User user = new User(signUpRequest.getName(), signUpRequest.getUsername(), hashPassword,
+                    signUpRequest.getEmail(), signUpRequest.getAuthorities());
+
+            userRepository.save(user);
+
+            URI location = ServletUriComponentsBuilder
+                    .fromCurrentContextPath().path("/api/users/{username}")
+                    .buildAndExpand(user.getUsername()).toUri();
+
+            return new ResponseEntity<>("User registered successfully", HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            log.info("Exception occurred: ", e);
+            return new ResponseEntity<>("{\n  status: 503\n  error: \"Internal server error\"\n}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        // Create user account
-        String hashPassword = passwordEncoder.encode(signUpRequest.getPassword());
-        User user = new User(signUpRequest.getName(), signUpRequest.getUsername(), hashPassword,
-                signUpRequest.getEmail(), signUpRequest.getAuthorities());
-
-        userRepository.save(user);
-
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentContextPath().path("/api/users/{username}")
-                .buildAndExpand(user.getUsername()).toUri();
-
-        return new ResponseEntity<>("User registered successfully", HttpStatus.ACCEPTED);
     }
 }
 

@@ -1,5 +1,6 @@
 package com.speer.authserver.util;
 
+import com.speer.authserver.exception.AuthorizationException;
 import com.speer.authserver.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -57,9 +58,8 @@ public class JwtTokenProvider {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
             return true;
         } catch (Exception ex) {
-            // Handle exception, e.g., log or throw custom exception
+            throw new AuthorizationException("Token Validation failed");
         }
-        return false;
     }
     public Collection<? extends GrantedAuthority> getAuthoritiesFromToken(String token) {
         Claims claims = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();

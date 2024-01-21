@@ -1,10 +1,12 @@
 package com.speer.authserver.util;
 
 
+import com.speer.authserver.exception.AuthorizationException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,6 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -25,14 +28,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = extractJwtFromRequest(request);
 
-            if (jwt != null && jwtTokenProvider.validateToken(jwt)) {
-                Authentication authentication = new UsernamePasswordAuthenticationToken(
-                        null, null, jwtTokenProvider.getAuthoritiesFromToken(jwt)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            if (jwt != null) {
+                if (jwtTokenProvider.validateToken(jwt)) {
+                    Authentication authentication = new UsernamePasswordAuthenticationToken(
+                            null, null, jwtTokenProvider.getAuthoritiesFromToken(jwt)
+                    );
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    // Token is not valid, handle accordingly (e.g., throw an exception or log)
+                    log.warn("Invalid JWT token");
+                }
             }
         } catch (Exception ex) {
-            // Handle exceptions, e.g., log or throw custom exception
+            log.info("An Exception Occurred", ex);
+            throw new AuthorizationException("An error occurred while validating token");
         }
 
         filterChain.doFilter(request, response);

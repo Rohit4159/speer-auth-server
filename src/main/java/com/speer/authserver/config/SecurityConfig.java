@@ -4,6 +4,7 @@ import com.speer.authserver.util.JwtAuthenticationFilter;
 import com.speer.authserver.util.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -36,11 +37,11 @@ public class SecurityConfig {
     }
 
     @Bean
-    @Order(2)
+    @Order(Ordered.HIGHEST_PRECEDENCE + 20)
     public SecurityFilterChain appSecurityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authorize->
                 authorize
-                        .requestMatchers(antMatcher("/api/auth/**")).permitAll()
+                        .requestMatchers(antMatcher("/api/auth/**"),antMatcher("/api/auth/login")).permitAll()
                         .anyRequest().authenticated());
 
         http.sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
@@ -49,7 +50,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-//    @Bean
 //    public UserDetailsService userDetailsService() {
 //        var u1 = User.withUsername("user")
 //                .password("password")
