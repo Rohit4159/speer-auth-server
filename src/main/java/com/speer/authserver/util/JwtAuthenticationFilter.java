@@ -38,6 +38,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     // Token is not valid, handle accordingly (e.g., throw an exception or log)
                     log.warn("Invalid JWT token");
                 }
+            } else {
+                throw new AuthorizationException("Invalid or no authorization token was provided");
             }
         } catch (Exception ex) {
             log.info("An Exception Occurred", ex);
@@ -45,6 +47,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        return request.getServletPath().startsWith("/api/auth/");
     }
 
     private String extractJwtFromRequest(HttpServletRequest request) {
