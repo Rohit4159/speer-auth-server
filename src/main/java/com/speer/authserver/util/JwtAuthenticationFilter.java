@@ -10,11 +10,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
 @Slf4j
+@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -53,7 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return request.getServletPath().startsWith("/api/auth/");
     }
 
-    private String extractJwtFromRequest(HttpServletRequest request) {
+    public String extractJwtFromRequest(HttpServletRequest request) {
         // Extract JWT from the Authorization header or from a custom header
         // (Adjust this based on how you send the JWT in your requests)
         String bearerToken = request.getHeader("Authorization");

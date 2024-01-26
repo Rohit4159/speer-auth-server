@@ -5,6 +5,7 @@ import com.speer.authserver.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class JwtTokenProvider {
 
     @Value("${app.jwtSecret}")
@@ -34,7 +36,7 @@ public class JwtTokenProvider {
                 Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
                 return Jwts.builder()
-                        .setSubject(user.getUserId())
+                        .setSubject(user.getUsername())
                         .setIssuedAt(new Date())
                         .setExpiration(expiryDate)
                         .signWith(SignatureAlgorithm.HS512, jwtSecret)
@@ -44,13 +46,12 @@ public class JwtTokenProvider {
         return null;
     }
 
-    public Long getUserIdFromToken(String token) {
+    public String getUserIdFromToken(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(jwtSecret)
                 .parseClaimsJws(token)
                 .getBody();
-
-        return Long.parseLong(claims.getSubject());
+        return claims.getSubject();
     }
 
     public boolean validateToken(String authToken) {
